@@ -1,0 +1,16 @@
+{
+  "name": "vinczerobi/weather-wp-demo",
+  "description": "Demonstrates how to use openweathermap api and create wp widget",
+  "require": {
+    "johnpbloch/wordpress": "*",
+    "vlucas/phpdotenv": "^5.4" 
+  },
+  "extra": {
+    "wordpress-install-dir": "docroot"
+  },
+  "config": {
+    "allow-plugins": {
+      "johnpbloch/wordpress-core-installer": true
+    }
+  }
+}
