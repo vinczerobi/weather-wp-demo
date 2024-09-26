@@ -18,6 +18,12 @@ add_action('init', function() {
 });
 
 
+require_once(__DIR__.'/widget_weather.php');
+add_action( 'widgets_init', function() {
+	register_widget('Weather_Widget');
+});
+
+
 if(is_admin()) {
 	if(!empty($_POST['openweathermap_apikey'])) {
 		$openweathermap_apikey = $_POST['openweathermap_apikey'];
@@ -96,6 +102,10 @@ function locate_by_ip() {
  * @return array.
  */
 function get_weather_by_cord($lat, $lon) {
+	if(empty($GLOBALS['openweathermap_apikey'])) {
+		$GLOBALS['openweathermap_apikey'] = (string)get_option('openweathermap_apikey');
+	}
+
 	$url = "https://api.openweathermap.org/data/3.0/onecall?lat={$lat}&lon={$lon}&exclude=minutely,hourly,daily,alerts&lang=hu&units=metric&appid=".$GLOBALS['openweathermap_apikey'];
 	$response = wp_remote_get($url);
 	$weather  = wp_remote_retrieve_body( $response );
