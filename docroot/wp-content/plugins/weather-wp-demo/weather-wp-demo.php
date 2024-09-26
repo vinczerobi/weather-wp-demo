@@ -9,6 +9,15 @@ Author URI:  http://example.com
 */
 
 
+add_action('init', function() {
+    add_rewrite_rule(
+        '^city/([^/]*)/?', 				// a 'city/{lakohelyed_neve}' mintázat
+        'index.php?city=$matches[1]',	// a 'city' változó beállítása a lekérdezésben
+        'top' 							// a szabály helye
+    );
+});
+
+
 if(is_admin()) {
 	if(!empty($_POST['openweathermap_apikey'])) {
 		$openweathermap_apikey = $_POST['openweathermap_apikey'];
@@ -25,6 +34,38 @@ if(is_admin()) {
 	function openweathermap_settings() {
 		include 'settings.php';
 	}
+}
+
+else {		// publikus felületen vagyunk
+
+	add_filter('query_vars', function() {
+	    $vars[] = 'city'; // regisztráljuk a 'city' változót
+	    return $vars;
+	});
+
+	add_action('template_redirect', function() {
+	    // Ellenőrizzük, hogy a 'city' változó létezik-e
+	    if (get_query_var('city')) {
+	        $city = get_query_var('city'); // a 'city' változó értéke
+
+			if(empty($GLOBALS['openweathermap_apikey'])) {
+				$GLOBALS['openweathermap_apikey'] = (string)get_option('openweathermap_apikey');
+			}
+
+			$url = "http://api.openweathermap.org/geo/1.0/direct?q={$city}&limit=1&appid=".$GLOBALS['openweathermap_apikey'];
+			$response = wp_remote_get($url);
+			$geocode  = wp_remote_retrieve_body( $response );
+			$geo      = json_decode($geocode, true)[0];
+			$weather  = get_weather_by_cord($geo['lat'], $geo['lon']);
+			$rendered = render_weather($weather);
+			echo '<h2>'.$city.' időjárása</h2>';
+			echo $rendered;
+
+	        exit; // Megállítjuk a további WordPress betöltést
+	    }
+
+	});
+
 }
 
 
